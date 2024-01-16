@@ -1,6 +1,5 @@
 const fs = require("fs");
 const crypto = require("crypto");
-const { create } = require("domain");
 
 class UsersRepository {
   constructor(filename) {
@@ -63,11 +62,13 @@ class UsersRepository {
     const records = await this.getAll();
     const record = records.find((record) => record.id === id);
 
-    if (!record) throw new Error(`Record with the id ${id} not found`);
+    if (!record) {
+      throw new Error(`Record with the id ${id} not found`);
+    }
 
     Object.assign(record, attributes);
 
-    await this.writeAll(record);
+    await this.writeAll(records);
   }
 }
 
