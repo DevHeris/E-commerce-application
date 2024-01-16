@@ -1,4 +1,5 @@
 const fs = require("fs");
+const crypto = require("crypto");
 
 class UsersRepository {
   constructor(filename) {
@@ -26,11 +27,13 @@ class UsersRepository {
   }
 
   async create(attributes) {
+    attributes.id = this.randomId();
+
     const records = await this.getAll();
     records.push(attributes);
 
     // Replace existing record with a new one
-    this.writeAll(records);
+    await this.writeAll(records);
   }
 
   async writeAll(records) {
@@ -39,19 +42,27 @@ class UsersRepository {
       JSON.stringify(records, null, 2)
     );
   }
+
+  randomId() {
+    return crypto.randomBytes(4).toString("hex");
+  }
+
+  async getOne(id) {
+    const records = await this.getAll();
+    return records.find((record) => record.id === id);
+  }
+
+  async delete(id) {
+    const records = await this.getAll();
+    const filteredRecord = records.filter((record) => record.id !== id);
+    await this.writeAll(filteredRecord);
+  }
 }
 
 const test = async () => {
   const repo = new UsersRepository("users.json");
 
-  await repo.create({
-    email: "badairoinioluwa578@gmail.com",
-    password: "test123",
-  });
-
-  const users = await repo.getAll();
-
-  console.log(users);
+  await repo.delete("4bec2d0d");
 };
 
 test();
