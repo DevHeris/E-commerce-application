@@ -1,5 +1,6 @@
 const fs = require("fs");
 const crypto = require("crypto");
+const { create } = require("domain");
 
 class UsersRepository {
   constructor(filename) {
@@ -57,12 +58,26 @@ class UsersRepository {
     const filteredRecord = records.filter((record) => record.id !== id);
     await this.writeAll(filteredRecord);
   }
+
+  async update(id, attributes) {
+    const records = await this.getAll();
+    const record = records.find((record) => record.id === id);
+
+    if (!record) throw new Error(`Record with the id ${id} not found`);
+
+    Object.assign(record, attributes);
+
+    await this.writeAll(record);
+  }
 }
 
 const test = async () => {
   const repo = new UsersRepository("users.json");
 
-  await repo.delete("4bec2d0d");
+  await repo.update("784ot23t783t73t27t872", {
+    email: "test@gmail.com",
+    allgood: "true",
+  });
 };
 
 test();
