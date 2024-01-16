@@ -17,16 +17,20 @@ class UsersRepository {
   }
 
   async getAll() {
-    // Open the file called this.filename
-    const content = await fs.promises.readFile(this.filename, {
-      encoding: "utf8",
-    });
-    // Read its content
-    console.log(content);
-    // Parse the contents
-    // Return the parsed data
+    // Open the file called this.filename and parse its content and return the data
+    return JSON.parse(
+      await fs.promises.readFile(this.filename, {
+        encoding: "utf8",
+      })
+    );
   }
 }
 
-const repo = new UsersRepository("users.json");
-repo.getAll();
+const test = async () => {
+  const repo = new UsersRepository("users.json");
+
+  const users = await repo.getAll();
+  console.log(users);
+};
+
+test();
