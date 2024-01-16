@@ -24,12 +24,33 @@ class UsersRepository {
       })
     );
   }
+
+  async create(attributes) {
+    const records = await this.getAll();
+    records.push(attributes);
+
+    // Replace existing record with a new one
+    this.writeAll(records);
+  }
+
+  async writeAll(records) {
+    await fs.promises.writeFile(
+      this.filename,
+      JSON.stringify(records, null, 2)
+    );
+  }
 }
 
 const test = async () => {
   const repo = new UsersRepository("users.json");
 
+  await repo.create({
+    email: "badairoinioluwa578@gmail.com",
+    password: "test123",
+  });
+
   const users = await repo.getAll();
+
   console.log(users);
 };
 
