@@ -34,6 +34,8 @@ class UsersRepository {
 
     // Replace existing record with a new one
     await this.writeAll(records);
+
+    return attributes;
   }
 
   async writeAll(records) {
