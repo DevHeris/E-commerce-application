@@ -9,7 +9,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({ keys: ["ioghrbvduif"] }));
 
 // Route handler
-app.get("/", (req, res) => {
+app.get("/signup", (req, res) => {
   res.send(`
   <div>
 Your id is : ${req.session.userId}
@@ -23,7 +23,7 @@ Your id is : ${req.session.userId}
   `);
 });
 
-app.post("/", async (req, res) => {
+app.post("/signup", async (req, res) => {
   const { email, password, passwordConfirmation } = req.body;
   const existingUser = await UsersRepo.getOneBy({ email });
 
@@ -37,6 +37,11 @@ app.post("/", async (req, res) => {
   req.session.userId = user.id;
 
   res.send("Account Created!!!");
+});
+
+app.get("/signout", (req, res) => {
+  req.session = null;
+  res.send("You have now signed out");
 });
 
 app.listen(3000, () => {
