@@ -63,22 +63,30 @@ class UsersRepository {
     const record = records.find((record) => record.id === id);
 
     if (!record) {
-      throw new Error(`Record with the id ${id} not found`);
+      throw new Error(`Record with id ${id} not found`);
     }
 
     Object.assign(record, attributes);
-
     await this.writeAll(records);
+  }
+
+  async getOneBy(filters) {
+    const records = await this.getAll();
+
+    for (const record of records) {
+      let found = true;
+
+      for (const key in filters) {
+        if (record[key] !== filters[key]) {
+          found = false;
+        }
+      }
+
+      if (found) {
+        return record;
+      }
+    }
   }
 }
 
-const test = async () => {
-  const repo = new UsersRepository("users.json");
-
-  await repo.update("784ot23t783t73t27t872", {
-    email: "test@gmail.com",
-    allgood: "true",
-  });
-};
-
-test();
+module.exports = new UsersRepository("users.json");
