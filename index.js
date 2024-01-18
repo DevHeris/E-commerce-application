@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
-const UsersRepo = require("./repositories/users");
+const usersRepo = require("./repositories/users");
 
 const app = express();
 
@@ -25,7 +25,7 @@ Your id is : ${req.session.userId}
 
 app.post("/signup", async (req, res) => {
   const { email, password, passwordConfirmation } = req.body;
-  const existingUser = await UsersRepo.getOneBy({ email });
+  const existingUser = await usersRepo.getOneBy({ email });
 
   // Note that we are returning "early" from these if statements
 
@@ -37,7 +37,7 @@ app.post("/signup", async (req, res) => {
     return res.send("Passwords must match");
 
   // Create a user in our user repo to represent this person
-  const user = await UsersRepo.create({ email, password });
+  const user = await usersRepo.create({ email, password });
 
   // Store the ID of that user inside the users cookie
   req.session.userId = user.id;
@@ -64,7 +64,7 @@ app.get("/signin", async (req, res) => {
 
 app.post("/signin", async (req, res) => {
   const { email, password } = req.body;
-  const user = await UsersRepo.getOneBy({ email });
+  const user = await usersRepo.getOneBy({ email });
 
   // Note that we are returning "early" from these if statements
 
@@ -72,7 +72,12 @@ app.post("/signin", async (req, res) => {
   if (!user) return res.send(`Email not found`);
 
   // Password check
-  if (password !== user.password) return res.send("Invalid password");
+  const validPassword = await usersRepo.comparePasswords(
+    user.password,
+    password
+  );
+
+  if (!validPassword) return res.send("Invalid Password");
 
   req.session.userId = user.id;
 
