@@ -35,20 +35,31 @@ class UsersRepository {
     const records = await this.getAll();
 
     const salt = crypto.randomBytes(8).toString("hex");
+
+    // Hashed (password + salt)
     const buff = await scrypt(attributes.password, salt, 64);
 
-    // Record object is the same as attribute object but with an updated password
-    const record = records.push({
+    // record object is the same as the attributes object but with the updated (salted and hashed) password
+    const record = {
       ...attributes,
       password: `${buff.toString("hex")}.${salt}`,
-    });
+    };
 
-    console.log(record);
+    records.push(record);
 
     // Replace existing record with a new one
     await this.writeAll(records);
 
     return record;
+  }
+
+  async comparePasswords(saved, supplied) {
+    // saved === Password from the database "hashed.salt"
+    // supplied === Password from the user tying to sign in
+    const [hashed, salt] = saved.split(".");
+    const hashedSupplied = scrypt(supplied, salt, 64);
+
+    return hashed === hashedSupplied;
   }
 
   async writeAll(records) {
