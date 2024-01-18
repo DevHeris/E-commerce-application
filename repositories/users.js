@@ -1,5 +1,8 @@
 const fs = require("fs");
 const crypto = require("crypto");
+const util = require("util");
+
+const scrypt = util.promisify(crypto.scrypt);
 
 class UsersRepository {
   constructor(filename) {
@@ -30,12 +33,22 @@ class UsersRepository {
     attributes.id = this.randomId();
 
     const records = await this.getAll();
-    records.push(attributes);
+
+    const salt = crypto.randomBytes(8).toString("hex");
+    const buff = await scrypt(attributes.password, salt, 64);
+
+    // Record object is the same as attribute object but with an updated password
+    const record = records.push({
+      ...attributes,
+      password: `${buff.toString("hex")}.${salt}`,
+    });
+
+    console.log(record);
 
     // Replace existing record with a new one
     await this.writeAll(records);
 
-    return attributes;
+    return record;
   }
 
   async writeAll(records) {
