@@ -42,29 +42,45 @@ router.get("/signout", (req, res) => {
   res.send("You have now signed out");
 });
 
-router.get("/signin", async (req, res) => {
+router.get("/signin", (req, res) => {
   res.send(signinTemplate());
 });
 
-router.post("/signin", async (req, res) => {
-  const { email, password } = req.body;
-  const user = await usersRepo.getOneBy({ email });
+router.post(
+  "/signin",
+  [
+    check("email")
+      .trim()
+      .normalizeEmail()
+      .isEmail()
+      .withMessage("Must provide a valid email")
+      .custom(async (email) => {
+        const user = await usersRepo.getOneBy({ email });
+        if (!user) {
+          throw new Error("Email not found!");
+        }
+      }),
+    check("password").trim(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    console.log(errors);
 
-  // Email check
-  if (!user) return res.send(`Email not found`);
+    const { email, password } = req.body;
 
-  // Password check
-  const validPassword = await usersRepo.comparePasswords(
-    user.password,
-    password
-  );
+    // Password check
+    const validPassword = await usersRepo.comparePasswords(
+      user.password,
+      password
+    );
 
-  if (!validPassword) return res.send("Invalid Password");
+    if (!validPassword) return res.send("Invalid Password");
 
-  req.session.userId = user.id;
+    req.session.userId = user.id;
 
-  res.send("You are now signed in");
-});
+    res.send("You are now signed in");
+  }
+);
 
 // Export router to index.js
 module.exports = router;
