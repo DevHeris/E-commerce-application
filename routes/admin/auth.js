@@ -15,25 +15,35 @@ router.get("/signup", (req, res) => {
 router.post(
   "/signup",
   [
-    check("email").trim().normalizeEmail().isEmail(),
-    check("password").trim().isLength({ min: 4, max: 20 }),
-    check("passwordConfirmation").trim().isLength({ min: 4, max: 20 }),
+    check("email")
+      .trim()
+      .normalizeEmail()
+      .isEmail()
+      .withMessage("Must be a valid email")
+      .custom(async (email) => {
+        const existingUser = await usersRepo.getOneBy({ email });
+        if (existingUser) {
+          throw new Error("Email in use");
+        }
+      }),
+    check("password")
+      .trim()
+      .isLength({ min: 4, max: 20 })
+      .withMessage("Must be between 4 and 20 characters"),
+    check("passwordConfirmation")
+      .trim()
+      .isLength({ min: 4, max: 20 })
+      .withMessage("Must be between 4 and 20 characters")
+      .custom((passwordConfirmation, { req }) => {
+        if (req.body.password !== passwordConfirmation)
+          throw new Error("Passwords must match");
+      }),
   ],
   async (req, res) => {
     const errors = validationResult(req);
     console.log(errors);
 
     const { email, password, passwordConfirmation } = req.body;
-    const existingUser = await usersRepo.getOneBy({ email });
-
-    // Note that we are returning "early" from these if statements
-
-    // Email check
-    if (existingUser) return res.send("User already exists");
-
-    // Password check
-    if (password !== passwordConfirmation)
-      return res.send("Passwords must match");
 
     // Create a user in our user repo to represent this person
     const user = await usersRepo.create({ email, password });
