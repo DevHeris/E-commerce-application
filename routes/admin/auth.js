@@ -22,7 +22,8 @@ router.post(
   [requireEmail, requirePassword, requirePasswordConfirmation],
   async (req, res) => {
     const errors = validationResult(req);
-    console.log(errors);
+
+    if (!errors.isEmpty()) res.send(signupTemplate({ req, errors }));
 
     const { email, password, passwordConfirmation } = req.body;
 
@@ -48,8 +49,6 @@ router.get("/signin", async (req, res) => {
 router.post("/signin", async (req, res) => {
   const { email, password } = req.body;
   const user = await usersRepo.getOneBy({ email });
-
-  // Note that we are returning "early" from these if statements
 
   // Email check
   if (!user) return res.send(`Email not found`);
