@@ -8,6 +8,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession({ keys: ["ioghrbvduif"] }));
 
 app.use(authRouter);
+
 app.listen(3000, () => {
   console.log("listening");
 });

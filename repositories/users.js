@@ -6,22 +6,25 @@ const scrypt = util.promisify(crypto.scrypt);
 
 class UsersRepository {
   constructor(filename) {
-    if (!filename)
-      throw new Error("Creating a new repository requires a filename");
+    if (!filename) {
+      throw new Error("Creating a repository requires a filename");
+    }
 
     this.filename = filename;
-
     try {
       // Check to see if file already exist
+
       fs.accessSync(this.filename);
-    } catch (error) {
+    } catch (err) {
       // If file doesn't exist, create a new file
+
       fs.writeFileSync(this.filename, "[]");
     }
   }
 
   async getAll() {
     // Open the file called this.filename and parse its content and return the data
+
     return JSON.parse(
       await fs.promises.readFile(this.filename, {
         encoding: "utf8",
@@ -29,22 +32,21 @@ class UsersRepository {
     );
   }
 
-  async create(attributes) {
-    attributes.id = this.randomId();
-
-    const records = await this.getAll();
+  async create(attrs) {
+    attrs.id = this.randomId();
 
     const salt = crypto.randomBytes(8).toString("hex");
-
     // Hashed (password + salt)
-    const buff = await scrypt(attributes.password, salt, 64);
 
+    const buf = await scrypt(attrs.password, salt, 64);
+
+    const records = await this.getAll();
     // record object is the same as the attributes object but with the updated (salted and hashed) password
-    const record = {
-      ...attributes,
-      password: `${buff.toString("hex")}.${salt}`,
-    };
 
+    const record = {
+      ...attrs,
+      password: `${buf.toString("hex")}.${salt}`,
+    };
     records.push(record);
 
     // Replace existing record with a new one
@@ -54,14 +56,14 @@ class UsersRepository {
   }
 
   async comparePasswords(saved, supplied) {
-    // saved === Password from the database "hashed.salt"
-    // supplied === Password from the user tying to sign in
+    // Saved -> password saved in our database. 'hashed.salt'
+    // Supplied -> password given to us by a user trying sign in
     const [hashed, salt] = saved.split(".");
 
     // Have to await since scrypt returns a promise
-    const hashedSuppliedBuff = await scrypt(supplied, salt, 64);
+    const hashedSuppliedBuf = await scrypt(supplied, salt, 64);
 
-    return hashed === hashedSuppliedBuff.toString("hex");
+    return hashed === hashedSuppliedBuf.toString("hex");
   }
 
   async writeAll(records) {
@@ -82,11 +84,11 @@ class UsersRepository {
 
   async delete(id) {
     const records = await this.getAll();
-    const filteredRecord = records.filter((record) => record.id !== id);
-    await this.writeAll(filteredRecord);
+    const filteredRecords = records.filter((record) => record.id !== id);
+    await this.writeAll(filteredRecords);
   }
 
-  async update(id, attributes) {
+  async update(id, attrs) {
     const records = await this.getAll();
     const record = records.find((record) => record.id === id);
 
@@ -94,17 +96,17 @@ class UsersRepository {
       throw new Error(`Record with id ${id} not found`);
     }
 
-    Object.assign(record, attributes);
+    Object.assign(record, attrs);
     await this.writeAll(records);
   }
 
   async getOneBy(filters) {
     const records = await this.getAll();
 
-    for (const record of records) {
+    for (let record of records) {
       let found = true;
 
-      for (const key in filters) {
+      for (let key in filters) {
         if (record[key] !== filters[key]) {
           found = false;
         }
