@@ -1,9 +1,11 @@
-const express = require('express');
+const express = require("express");
 
 const router = express.Router();
 
-router.get('/admin/products', (req, res) => {});
+// Route to list all products
+router.get("/admin/products", (req, res) => {});
 
-router.get('/admin/products/new', (req, res) => {});
+// Route to create new product
+router.get("/admin/products/new", (req, res) => {});
 
 module.exports = router;
