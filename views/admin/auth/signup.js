@@ -1,22 +1,35 @@
 const layout = require("../layout");
 const { getError } = require("../../helpers");
 
-// Used Object destructuring below and not just 'req'  to note that it might be possible to want to recieve more than one argument. Which later happened
-module.exports = ({ req, errors }) => {
+module.exports = ({ errors }) => {
   return layout({
     content: `
-    <div>
-      Your id is: ${req.session.userId}
-      <form method="POST">
-        <input name="email" placeholder="email" type="email" />
-        ${getError(errors, "email")}
-        <input name="password" placeholder="password" type="password"/>
-        ${getError(errors, "password")}
-        <input name="passwordConfirmation" placeholder="password confirmation" type="password" />
-        ${getError(errors, "passwordConfirmation")}
-        <button>Sign Up</button>
-      </form>
-    </div>
-  `,
+      <div class="container">
+        <div class="columns is-centered">
+          <div class="column is-one-quarter">
+            <form method="POST">
+              <h1 class="title">Sign Up</h1>
+              <div class="field">
+                <label class="label">Email</label>
+                <input required class="input" placeholder="Email" name="email" />
+                <p>${getError(errors, "email")}</p>
+              </div>
+              <div class="field">
+                <label class="label">Password</label>
+                <input required class="input" placeholder="Password" name="password" type="password" />
+                <p>${getError(errors, "password")}</p>
+              </div>
+              <div class="field">
+                <label class="label">Password Confirmation</label>
+                <input required class="input" placeholder="Password Confirmation" name="passwordConfirm" type="password" />
+                <p>${getError(errors, "passwordConfirm")}</p>
+              </div>
+              <button class="button is-primary">Submit</button>
+            </form>
+            <a href="/signin">Have an account? Sign In</a>
+          </div>
+        </div>
+      </div>
+    `,
   });
 };
