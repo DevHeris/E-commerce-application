@@ -21,10 +21,14 @@ router.get("/admin/products/new", (req, res) => {
 
 router.post(
   "/admin/products/new",
-  [requireTitle, requirePrice],
+  // This particular order is very important (i.e the array shouldn't come before the upload(multer) middleware)
   upload.single("image"),
+  [requireTitle, requirePrice],
   async (req, res) => {
     const errors = validationResult(req);
+    console.log(errors);
+
+    if (!errors.isEmpty()) return res.send(productsNewTemplate({ errors }));
 
     const image = req.file.buffer.toString("base64");
     const { title, price } = req.body;
