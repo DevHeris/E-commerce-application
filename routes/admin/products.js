@@ -5,6 +5,7 @@ const multer = require("multer");
 
 const productsRepo = require("../../repositories/products");
 const productsNewTemplate = require("../../views/admin/products/new");
+const productsIndexTemplate = require("../../views/admin/products/index");
 const { requireTitle, requirePrice } = require("./validators");
 
 const router = express.Router();
@@ -12,7 +13,10 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Route to list all products
-router.get("/admin/products", (req, res) => {});
+router.get("/admin/products", async (req, res) => {
+  const products = await productsRepo.getAll();
+  res.send(productsIndexTemplate({ products }));
+});
 
 // Route to create new product
 router.get("/admin/products/new", (req, res) => {
