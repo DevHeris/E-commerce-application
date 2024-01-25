@@ -41,10 +41,16 @@ router.post(
   }
 );
 
-router.get("/admin/products/:id/edit", async (req, res) => {
-  const product = productsRepo.getOne(req.params.id);
+router.get("/admin/products/:id/edit", requireAuth, async (req, res) => {
+  const product = await productsRepo.getOne(req.params.id);
 
   if (!product) return res.send("Product not found");
+
+  res.send(productsEditTemplate({ product }));
+});
+
+router.post("/admin/products/:id/edit", requireAuth, async (req, res) => {
+  const product = await productsRepo.getOne(req.params.id);
 });
 
 module.exports = router;
